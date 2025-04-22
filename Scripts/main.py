@@ -6,7 +6,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-img = cv2.imread(".\Images\image.png")
+img = cv2.imread(".\Images\dangun_1.png")
 # cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
