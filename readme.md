@@ -1,5 +1,16 @@
 Pré-requisitos:
 
-pip install -q mediapipe
+Criar um ambiente virtual:
+py -m venv venv
 
-wget -O pose_landmarker.task -q https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
+Ativar o ambiente virtual:
+.\venv\Scripts\Activate.ps1
+
+Adicionar um .gitignore com o seguinte conteúdo:
+venv
+
+Instalar no ambiente virtual:
+
+pip install mediapipe
+
+curl -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
