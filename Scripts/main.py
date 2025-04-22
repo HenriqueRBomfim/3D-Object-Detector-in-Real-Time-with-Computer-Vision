@@ -44,7 +44,7 @@ from mediapipe.tasks.python import vision
 
 """
 
-img = cv2.imread(r".\Images\video2_dangun_1.png")
+img = cv2.imread(r".\Images\Treino\video2_dangun_1.png")
 # cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
@@ -61,7 +61,23 @@ image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
 # STEP 4: Detect pose landmarks from the input image.
 detection_result = detector.detect(image)
-print(detection_result.pose_landmarks[0])
+landmark_names = [
+    "nose", "left eye (inner)", "left eye", "left eye (outer)",
+    "right eye (inner)", "right eye", "right eye (outer)",
+    "left ear", "right ear", "mouth (left)", "mouth (right)",
+    "left shoulder", "right shoulder", "left elbow", "right elbow",
+    "left wrist", "right wrist", "left pinky", "right pinky",
+    "left index", "right index", "left thumb", "right thumb",
+    "left hip", "right hip", "left knee", "right knee",
+    "left ankle", "right ankle", "left heel", "right heel",
+    "left foot index", "right foot index"
+]
+
+landmarks = detection_result.pose_landmarks[0]
+
+for idx, landmark in enumerate(landmarks):
+    name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
+    print(f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}")
 
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
