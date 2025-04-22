@@ -6,7 +6,45 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-img = cv2.imread(".\Images\dangun_1.png")
+""" Legenda:
+
+0 - nose
+1 - left eye (inner)
+2 - left eye
+3 - left eye (outer)
+4 - right eye (inner)
+5 - right eye
+6 - right eye (outer)
+7 - left ear
+8 - right ear
+9 - mouth (left)
+10 - mouth (right)
+11 - left shoulder
+12 - right shoulder
+13 - left elbow
+14 - right elbow
+15 - left wrist
+16 - right wrist
+17 - left pinky
+18 - right pinky
+19 - left index
+20 - right index
+21 - left thumb
+22 - right thumb
+23 - left hip
+24 - right hip
+25 - left knee
+26 - right knee
+27 - left ankle
+28 - right ankle
+29 - left heel
+30 - right heel
+31 - left foot index
+32 - right foot index
+
+"""
+
+img = cv2.imread(r".\Images\video2_dangun_1.png")
 # cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
@@ -23,6 +61,7 @@ image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
 # STEP 4: Detect pose landmarks from the input image.
 detection_result = detector.detect(image)
+print(detection_result.pose_landmarks[0])
 
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
