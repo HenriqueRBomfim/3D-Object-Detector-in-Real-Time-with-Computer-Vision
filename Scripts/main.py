@@ -44,7 +44,7 @@ from mediapipe.tasks.python import vision
 
 """
 
-img = cv2.imread(r".\Images\Treino\video2_dangun_1.png")
+img = cv2.imread(r".\Images\Treino\ImagemInteira.png")
 # cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
