@@ -56,7 +56,7 @@ elif is_mac:
 else:
     raise Exception("Sistema operacional não suportado")
 img = cv2.imread(img_path)
-cv2.imshow("Minha Imagem", img)
+# cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
 
@@ -110,11 +110,19 @@ landmark_names = [
 
 landmarks = detection_result.pose_landmarks[0]
 
+landmark_data = {}
+
 for idx, landmark in enumerate(landmarks):
     name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
     print(
         f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
     )
+    landmark_data[name] = {
+        "x": round(landmark.x, 3),
+        "y": round(landmark.y, 3),
+        "z": round(landmark.z, 3),
+        "visibility": round(landmark.visibility, 2)
+    }
 
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
