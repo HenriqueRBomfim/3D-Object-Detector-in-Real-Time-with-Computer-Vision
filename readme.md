@@ -1,18 +1,26 @@
 Pré-requisitos:
 
 Criar um ambiente virtual:
+
+```
 py -m venv venv
+```
 
 Ativar o ambiente virtual:
+
+```
 .\venv\Scripts\Activate.ps1
+```
 
 Adicionar um .gitignore com o seguinte conteúdo:
 venv
 
 Instalar no ambiente virtual:
 
+```
 pip install mediapipe
+```
 
-curl -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
+curl -o pose_landmarker.task <https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task>
 
-curl -q -O image.jpg https://cdn.pixabay.com/photo/2019/03/12/20/39/girl-4051811_960_720.jpg
+curl -q -O image.jpg <https://cdn.pixabay.com/photo/2019/03/12/20/39/girl-4051811_960_720.jpg>
