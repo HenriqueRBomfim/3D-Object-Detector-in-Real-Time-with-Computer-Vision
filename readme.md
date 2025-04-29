@@ -23,10 +23,10 @@ pip install mediapipe
 
 curl -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
 
-curl -q -O image.jpg https://cdn.pixabay.com/photo/2019/03/12/20/39/girl-4051811_960_720.jpg
 
 Versão final do .gitignore:
 
 venv
+.venv
 pose_landmarker.task
 Scripts\__pycache__
