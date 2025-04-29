@@ -1,5 +1,5 @@
 import cv2
-from draw_landmarks_on_image import draw_landmarks_on_image
+from funcoes import draw_landmarks_on_image, calcula_todos_angulos
 import numpy as np
 import sys
 
@@ -124,15 +124,18 @@ for idx, landmark in enumerate(landmarks):
         "visibility": round(landmark.visibility, 2)
     }
 
+dic_final = calcula_todos_angulos(landmark_data)
+print(dic_final)
+
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
 cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-segmentation_mask = detection_result.segmentation_masks[0].numpy_view()
-visualized_mask = np.repeat(segmentation_mask[:, :, np.newaxis], 3, axis=2) * 255
-cv2.imshow("Máscara de Segmentação", visualized_mask.astype(np.uint8))
+# segmentation_mask = detection_result.segmentation_masks[0].numpy_view()
+# visualized_mask = np.repeat(segmentation_mask[:, :, np.newaxis], 3, axis=2) * 255
+# cv2.imshow("Máscara de Segmentação", visualized_mask.astype(np.uint8))
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
