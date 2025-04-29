@@ -50,7 +50,7 @@ is_windows = sys.platform == "win32"
 is_mac = sys.platform == "darwin"
 
 if is_windows:
-    img_path = r".\Images\Treino\ImagemInteira.png"
+    img_path = r".\Images\Treino\video7_dangun.png"
 elif is_mac:
     img_path = "./Images/Treino/ImagemInteira.png"
 else:
@@ -124,8 +124,17 @@ for idx, landmark in enumerate(landmarks):
         "visibility": round(landmark.visibility, 2)
     }
 
-dic_final = calcula_todos_angulos(landmark_data)
+dic_final,vetor = calcula_todos_angulos(landmark_data)
 print(dic_final)
+with open("Scripts/vetores.txt", "r") as file:
+    conteudo = file.read()
+    
+with open("Scripts/vetores.txt", "w") as file:
+    for i in vetor:
+        conteudo = conteudo + str(i) + ','
+    conteudo = conteudo + "\n"
+    file.write(conteudo)
+
 
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)

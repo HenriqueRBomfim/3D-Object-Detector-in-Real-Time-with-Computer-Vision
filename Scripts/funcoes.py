@@ -61,6 +61,7 @@ def calcula_todos_angulos(landmark_data):
     pontos_interesse, legenda = obtem_pontos_interesse(pontos_formatados)
     dic_final ={}
     i = 1
+    vetor = []
     for indice,eixo in enumerate(pontos_interesse):
         label = "eixo" + str(i)
         dic_final[label] = {}
@@ -69,5 +70,9 @@ def calcula_todos_angulos(landmark_data):
         dic_final[label][legenda[indice][2]] = pontos_formatados[legenda[indice][2]]
         dic_final[label]['angulo'] = calcula_angulo(eixo)
         i += 1
-    
-    return dic_final
+        vetor.append(dic_final[label]['angulo'])
+        vetor.append(pontos_formatados[legenda[indice][0]])
+        vetor.append(pontos_formatados[legenda[indice][1]])
+        vetor.append(pontos_formatados[legenda[indice][2]])
+
+    return dic_final, vetor
