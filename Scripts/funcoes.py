@@ -1,6 +1,14 @@
+import mediapipe as mp
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
+
+# atalhos para desenho
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_spec = mp.solutions.drawing_utils.DrawingSpec(thickness=2, circle_radius=2)
+mp_connection_spec = mp.solutions.drawing_utils.DrawingSpec(thickness=2)
+POSE_CONNECTIONS = mp.solutions.pose.POSE_CONNECTIONS
+_LM = mp.solutions.pose.PoseLandmark
 
 
 def draw_landmarks_on_image(rgb_image, detection_result):
@@ -76,3 +84,81 @@ def calcula_todos_angulos(landmark_data):
         vetor.append(pontos_formatados[legenda[indice][2]])
 
     return dic_final, vetor
+
+def draw_landmarks_on_video_frame(frame: np.ndarray, detection_result) -> np.ndarray:
+    """Desenha todos os pose_landmarks do resultado sobre o frame BGR in-place."""
+    if not detection_result.pose_landmarks:
+        return frame
+
+    for single_landmarks in detection_result.pose_landmarks:
+        proto = landmark_pb2.NormalizedLandmarkList()
+        for lm in single_landmarks:
+            proto.landmark.add(x=lm.x, y=lm.y, z=lm.z)
+        mp_drawing.draw_landmarks(
+            frame, proto, POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_spec,
+            connection_drawing_spec=mp_connection_spec
+        )
+    return frame
+
+def formata_pontos_video(detection_result):
+    """
+    Converte detection_result.pose_landmarks em:
+      { pessoa_idx: { 'left wrist': [x,y], ... }, ... }
+    """
+    formatted = {}
+    if not detection_result.pose_landmarks:
+        return formatted
+
+    for pid, lm_list in enumerate(detection_result.pose_landmarks):
+        pontos = {}
+        for idx, lm in enumerate(lm_list):
+            name = _LM(idx).name.lower().replace('_', ' ')
+            pontos[name] = [lm.x, lm.y]
+        formatted[pid] = pontos
+    return formatted
+
+def calcula_todos_angulos_video(detection_result):
+    """
+    A partir de detection_result:
+      1) formata cada pessoa em dict de pontos (x,y)
+      2) identifica eixos de interesse
+      3) calcula ângulo em cada eixo
+    Retorna:
+      { pid: { 'eixo1': {..., 'angulo': …}, 'eixo2': …, … }, … }
+    """
+    # define quais tríades de pontos compõem cada "eixo"
+    eixos = [
+        ['left wrist','left elbow','left shoulder'],
+        ['right wrist','right elbow','right shoulder'],
+        ['left elbow','left shoulder','left hip'],
+        ['right elbow','right shoulder','right hip'],
+        ['left shoulder','left hip','left knee'],
+        ['right shoulder','right hip','right knee'],
+        ['left hip','left knee','left ankle'],
+        ['right hip','right knee','right ankle']
+    ]
+
+    resultados = {}
+    pontos_por_pessoa = formata_pontos_video(detection_result)
+
+    for pid, pontos in pontos_por_pessoa.items():
+        dic = {}
+        for i, eixo in enumerate(eixos, start=1):
+            # pega as coordenadas
+            p1, p2, p3 = np.array(pontos[eixo[0]]), np.array(pontos[eixo[1]]), np.array(pontos[eixo[2]])
+            # calcula vetor e ângulo
+            v1, v2 = p1 - p2, p3 - p2
+            cosθ = np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2))
+            ang = float(np.degrees(np.arccos(np.clip(cosθ, -1.0, 1.0))))
+            # monta dict para este eixo
+            label = f"eixo{i}"
+            dic[label] = {
+                eixo[0]: pontos[eixo[0]],
+                eixo[1]: pontos[eixo[1]],
+                eixo[2]: pontos[eixo[2]],
+                'angulo': round(ang,3)
+            }
+        resultados[pid] = dic
+
+    return resultados
