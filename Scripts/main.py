@@ -53,7 +53,7 @@ is_mac = sys.platform == "darwin"
 if is_windows:
     img_path = r".\Images\Treino\video4_dangun.png"
 elif is_mac:
-    img_path = "./Images/Treino/ImagemInteira.png"
+    img_path = "./Images/Treino/padding_dois_lados_video2_dangun_1.png"
 else:
     raise Exception("Sistema operacional não suportado")
 img = cv2.imread(img_path)
