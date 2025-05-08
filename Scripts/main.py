@@ -2,6 +2,7 @@ import cv2
 from funcoes import draw_landmarks_on_image, calcula_todos_angulos
 import numpy as np
 import sys
+import os
 
 # STEP 1: Import the necessary modules.
 import mediapipe as mp
@@ -50,7 +51,7 @@ is_windows = sys.platform == "win32"
 is_mac = sys.platform == "darwin"
 
 if is_windows:
-    img_path = r".\Images\Treino\video7_dangun.png"
+    img_path = r".\Images\Treino\video4_dangun.png"
 elif is_mac:
     img_path = "./Images/Treino/ImagemInteira.png"
 else:
@@ -139,6 +140,13 @@ with open("Scripts/vetores.txt", "w") as file:
 # STEP 5: Process the detection result. In this case, visualize it.
 annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
 cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+# i = 1
+# while True:
+#     output_path = f"../Pose-Corrector/Images/saidas/resultado{i}.png"
+#     if not os.path.exists(output_path):
+#         cv2.imwrite(output_path, cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+#         break
+#     i += 1
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
