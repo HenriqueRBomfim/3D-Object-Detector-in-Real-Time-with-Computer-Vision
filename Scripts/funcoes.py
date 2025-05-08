@@ -2,6 +2,7 @@ import mediapipe as mp
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
+import cv2
 
 # atalhos para desenho
 mp_drawing = mp.solutions.drawing_utils
@@ -12,24 +13,54 @@ _LM = mp.solutions.pose.PoseLandmark
 
 
 def draw_landmarks_on_image(rgb_image, detection_result):
-  pose_landmarks_list = detection_result.pose_landmarks
-  annotated_image = np.copy(rgb_image)
+    pose_landmarks_list = detection_result.pose_landmarks
+    annotated_image = np.copy(rgb_image)
 
-  # Loop through the detected poses to visualize.
-  for idx in range(len(pose_landmarks_list)):
-    pose_landmarks = pose_landmarks_list[idx]
+    # Lista de nomes das partes do corpo
+    landmark_names = [
+        "", "", "", "", "",
+        "", "", "", "", "",
+        "", "left shoulder", "right shoulder", "left elbow", "right elbow",
+        "left wrist", "right wrist", "", "", "",
+        "", "", "", "left hip", "right hip",
+        "left knee", "right knee", "left ankle", "right ankle", "",
+        "", "", ""
+    ]
 
-    # Draw the pose landmarks.
-    pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-    pose_landmarks_proto.landmark.extend([
-      landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in pose_landmarks
-    ])
-    solutions.drawing_utils.draw_landmarks(
-      annotated_image,
-      pose_landmarks_proto,
-      solutions.pose.POSE_CONNECTIONS,
-      solutions.drawing_styles.get_default_pose_landmarks_style())
-  return annotated_image
+    # Loop through the detected poses to visualize.
+    for idx in range(len(pose_landmarks_list)):
+        pose_landmarks = pose_landmarks_list[idx]
+
+        # Draw the pose landmarks.
+        pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+        pose_landmarks_proto.landmark.extend([
+            landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in pose_landmarks
+        ])
+        solutions.drawing_utils.draw_landmarks(
+            annotated_image,
+            pose_landmarks_proto,
+            solutions.pose.POSE_CONNECTIONS,
+            solutions.drawing_styles.get_default_pose_landmarks_style()
+        )
+
+    # Add text labels for each landmark
+    for i, landmark in enumerate(pose_landmarks):
+        if i < len(landmark_names):
+            name = landmark_names[i]
+            x = int(landmark.x * annotated_image.shape[1])
+            y = int(landmark.y * annotated_image.shape[0])
+            
+            # Desenha o contorno preto
+            cv2.putText(
+                annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 3, cv2.LINE_AA
+            )
+            # Desenha o texto branco por cima
+            cv2.putText(
+                annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA
+            )
+
+    # Retorna a imagem anotada após processar todos os pontos
+    return annotated_image
 
 def formata_pontos(pontos : dict):
     melhor_pontos = {}
