@@ -12,7 +12,7 @@ POSE_CONNECTIONS = mp.solutions.pose.POSE_CONNECTIONS
 _LM = mp.solutions.pose.PoseLandmark
 
 
-def draw_landmarks_on_image(rgb_image, detection_result):
+def draw_landmarks_on_image(rgb_image, detection_result, labels=True):
     pose_landmarks_list = detection_result.pose_landmarks
     annotated_image = np.copy(rgb_image)
 
@@ -50,14 +50,15 @@ def draw_landmarks_on_image(rgb_image, detection_result):
             x = int(landmark.x * annotated_image.shape[1])
             y = int(landmark.y * annotated_image.shape[0])
             
-            # Desenha o contorno preto
-            cv2.putText(
-                annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 3, cv2.LINE_AA
-            )
-            # Desenha o texto branco por cima
-            cv2.putText(
-                annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA
-            )
+            if labels:
+                # Desenha o contorno preto
+                cv2.putText(
+                    annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 3, cv2.LINE_AA
+                )
+                # Desenha o texto branco por cima
+                cv2.putText(
+                    annotated_image, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA
+                )
 
     # Retorna a imagem anotada após processar todos os pontos
     return annotated_image
