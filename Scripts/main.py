@@ -1,5 +1,5 @@
 import cv2
-from funcoes import draw_landmarks_on_image, calcula_todos_angulos
+from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_and_detect
 import numpy as np
 import sys
 import os
@@ -51,12 +51,19 @@ is_windows = sys.platform == "win32"
 is_mac = sys.platform == "darwin"
 
 if is_windows:
-    img_path = r".\Images\Treino\video4_dangun.png"
+    img_path = r".\Images\Treino\Dangun\Pose 1\padding_dois_lados_video2_dangun_1.png"
 elif is_mac:
     img_path = "./Images/Treino/padding_dois_lados_video2_dangun_1.png"
 else:
     raise Exception("Sistema operacional não suportado")
+
+# Carregar a imagem
 img = cv2.imread(img_path)
+
+# Verificar se a imagem foi carregada corretamente
+if img is None:
+    raise FileNotFoundError(f"Não foi possível carregar a imagem no caminho: {img_path}")
+
 # cv2.imshow("Minha Imagem", img)
 cv2.waitKey(0)  # Espera até uma tecla ser pressionada
 cv2.destroyAllWindows()  # Fecha a janela depois disso
@@ -71,8 +78,12 @@ detector = vision.PoseLandmarker.create_from_options(options)
 # STEP 3: Load the input image.
 image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
-# STEP 4: Detect pose landmarks from the input image.
-detection_result = detector.detect(image)
+# Converter a imagem Mediapipe para NumPy antes de normalizar
+image_np = image.numpy_view()
+
+# Normalizar a imagem e detectar os pontos novamente
+normalized_image, detection_result = normalize_and_detect(image_np, detector)
+
 landmark_names = [
     "nose",
     "left eye (inner)",
@@ -109,8 +120,11 @@ landmark_names = [
     "right foot index",
 ]
 
-landmarks = detection_result.pose_landmarks[0]
+# Salvar a imagem normalizada
+cv2.imwrite("normalized_image.png", normalized_image)
 
+# Salvar os pontos recalculados
+landmarks = detection_result.pose_landmarks[0]
 landmark_data = {}
 
 for idx, landmark in enumerate(landmarks):
@@ -125,6 +139,19 @@ for idx, landmark in enumerate(landmarks):
         "visibility": round(landmark.visibility, 2)
     }
 
+# Salvar os pontos recalculados em um arquivo
+with open("normalized_landmarks.txt", "w") as file:
+    for idx, landmark in enumerate(landmarks):
+        file.write(
+            f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
+        )
+
+# STEP 5: Process the detection result. In this case, visualize it.
+annotated_image = draw_landmarks_on_image(normalized_image, detection_result)
+cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 dic_final,vetor = calcula_todos_angulos(landmark_data)
 print(dic_final)
 with open("Scripts/vetores.txt", "r") as file:
@@ -135,24 +162,3 @@ with open("Scripts/vetores.txt", "w") as file:
         conteudo = conteudo + str(i) + ','
     conteudo = conteudo + "\n"
     file.write(conteudo)
-
-
-# STEP 5: Process the detection result. In this case, visualize it.
-annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
-cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-# i = 1
-# while True:
-#     output_path = f"../Pose-Corrector/Images/saidas/resultado{i}.png"
-#     if not os.path.exists(output_path):
-#         cv2.imwrite(output_path, cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-#         break
-#     i += 1
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# segmentation_mask = detection_result.segmentation_masks[0].numpy_view()
-# visualized_mask = np.repeat(segmentation_mask[:, :, np.newaxis], 3, axis=2) * 255
-# cv2.imshow("Máscara de Segmentação", visualized_mask.astype(np.uint8))
-
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()

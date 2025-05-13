@@ -193,3 +193,66 @@ def calcula_todos_angulos_video(detection_result):
         resultados[pid] = dic
 
     return resultados
+
+def normalize_and_detect(image_np, detector, output_size=(350, 550), padding_ratio=0.1):
+    """
+    Normaliza a imagem com base nos pontos detectados, adiciona padding e redimensiona para um tamanho padrão,
+    preservando a proporção original.
+    """
+    # Criar um objeto Mediapipe Image a partir do array NumPy
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_np)
+
+    # Detectar os pontos na imagem original
+    detection_result = detector.detect(mp_image)
+    if not detection_result.pose_landmarks:
+        raise ValueError("Nenhum ponto detectado na imagem.")
+
+    # Obter os pontos extremos
+    landmarks = detection_result.pose_landmarks[0]
+    x_coords = [landmark.x for landmark in landmarks]
+    y_coords = [landmark.y for landmark in landmarks]
+
+    # Calcular os limites dos pontos
+    min_x, max_x = min(x_coords), max(x_coords)
+    min_y, max_y = min(y_coords), max(y_coords)
+
+    # Adicionar padding
+    height, width, _ = image_np.shape
+    padding_x = int((max_x - min_x) * width * padding_ratio)
+    padding_y = int((max_y - min_y) * height * padding_ratio)
+
+    # Calcular os limites com padding
+    start_x = max(0, int(min_x * width) - padding_x)
+    end_x = min(width, int(max_x * width) + padding_x)
+    start_y = max(0, int(min_y * height) - padding_y)
+    end_y = min(height, int(max_y * height) + padding_y)
+
+    # Recortar a imagem com base nos limites
+    cropped_image = image_np[start_y:end_y, start_x:end_x]
+
+    # Preservar a proporção ao redimensionar
+    cropped_height, cropped_width, _ = cropped_image.shape
+    scale = min(output_size[1] / cropped_height, output_size[0] / cropped_width)
+    new_width = int(cropped_width * scale)
+    new_height = int(cropped_height * scale)
+
+    # Redimensionar a imagem mantendo a proporção
+    resized_image = cv2.resize(cropped_image, (new_width, new_height))
+
+    # Adicionar bordas para atingir o tamanho final
+    delta_w = output_size[0] - new_width
+    delta_h = output_size[1] - new_height
+    top, bottom = delta_h // 2, delta_h - (delta_h // 2)
+    left, right = delta_w // 2, delta_w - (delta_w // 2)
+    padded_image = cv2.copyMakeBorder(
+        resized_image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0]
+    )
+
+    # Criar um novo objeto Mediapipe Image para a imagem redimensionada
+    padded_image_mp = mp.Image(image_format=mp.ImageFormat.SRGB, data=padded_image)
+
+    # Detectar novamente os pontos na imagem redimensionada
+    detection_result_resized = detector.detect(padded_image_mp)
+
+    # Retornar a imagem normalizada e os pontos recalculados
+    return padded_image, detection_result_resized
