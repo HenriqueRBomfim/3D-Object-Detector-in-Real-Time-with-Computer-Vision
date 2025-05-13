@@ -1,5 +1,5 @@
 import cv2
-from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_and_detect
+from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_and_detect, analise_imagem
 import numpy as np
 import sys
 import os
@@ -57,97 +57,8 @@ elif is_mac:
 else:
     raise Exception("Sistema operacional não suportado")
 
-# Carregar a imagem
-img = cv2.imread(img_path)
+annotated_image, landmark_data = analise_imagem(img_path, labels=False)
 
-# Verificar se a imagem foi carregada corretamente
-if img is None:
-    raise FileNotFoundError(f"Não foi possível carregar a imagem no caminho: {img_path}")
-
-# cv2.imshow("Minha Imagem", img)
-cv2.waitKey(0)  # Espera até uma tecla ser pressionada
-cv2.destroyAllWindows()  # Fecha a janela depois disso
-
-# STEP 2: Create an PoseLandmarker object.
-base_options = python.BaseOptions(model_asset_path="pose_landmarker.task")
-options = vision.PoseLandmarkerOptions(
-    base_options=base_options, output_segmentation_masks=True
-)
-detector = vision.PoseLandmarker.create_from_options(options)
-
-# STEP 3: Load the input image.
-image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
-
-# Converter a imagem Mediapipe para NumPy antes de normalizar
-image_np = image.numpy_view()
-
-# Normalizar a imagem e detectar os pontos novamente
-normalized_image, detection_result = normalize_and_detect(image_np, detector)
-
-landmark_names = [
-    "nose",
-    "left eye (inner)",
-    "left eye",
-    "left eye (outer)",
-    "right eye (inner)",
-    "right eye",
-    "right eye (outer)",
-    "left ear",
-    "right ear",
-    "mouth (left)",
-    "mouth (right)",
-    "left shoulder",
-    "right shoulder",
-    "left elbow",
-    "right elbow",
-    "left wrist",
-    "right wrist",
-    "left pinky",
-    "right pinky",
-    "left index",
-    "right index",
-    "left thumb",
-    "right thumb",
-    "left hip",
-    "right hip",
-    "left knee",
-    "right knee",
-    "left ankle",
-    "right ankle",
-    "left heel",
-    "right heel",
-    "left foot index",
-    "right foot index",
-]
-
-# Salvar a imagem normalizada
-cv2.imwrite("normalized_image.png", normalized_image)
-
-# Salvar os pontos recalculados
-landmarks = detection_result.pose_landmarks[0]
-landmark_data = {}
-
-for idx, landmark in enumerate(landmarks):
-    name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
-    print(
-        f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
-    )
-    landmark_data[name] = {
-        "x": round(landmark.x, 3),
-        "y": round(landmark.y, 3),
-        "z": round(landmark.z, 3),
-        "visibility": round(landmark.visibility, 2)
-    }
-
-# Salvar os pontos recalculados em um arquivo
-with open("normalized_landmarks.txt", "w") as file:
-    for idx, landmark in enumerate(landmarks):
-        file.write(
-            f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
-        )
-
-# STEP 5: Process the detection result. In this case, visualize it.
-annotated_image = draw_landmarks_on_image(normalized_image, detection_result)
 cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
