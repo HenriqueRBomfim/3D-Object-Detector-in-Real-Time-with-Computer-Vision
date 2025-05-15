@@ -1,5 +1,5 @@
 import cv2
-from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_and_detect, analise_imagem
+from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_and_detect, analise_imagem, data_augmentation
 import numpy as np
 import sys
 import os
@@ -51,25 +51,27 @@ is_windows = sys.platform == "win32"
 is_mac = sys.platform == "darwin"
 
 if is_windows:
-    img_path = r".\Images\Treino\Dangun\Pose 1\padding_dois_lados_video2_dangun_1.png"
+    img_path = r".\Images\Treino\Dangun\Pose 1\video4_dangun.png"
 elif is_mac:
     img_path = "./Images/Treino/padding_dois_lados_video2_dangun_1.png"
 else:
     raise Exception("Sistema operacional não suportado")
 
-annotated_image, landmark_data = analise_imagem(img_path, labels=False)
+data_augmentation(img_path, -15, 15, 0.5, 1.5, 30, 30)
 
-cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# annotated_image, landmark_data, landmark_list = analise_imagem(img_path, labels=False)
 
-dic_final,vetor = calcula_todos_angulos(landmark_data)
-print(dic_final)
-with open("Scripts/vetores.txt", "r") as file:
-    conteudo = file.read()
+# cv2.imshow("Resultado com Pose", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+
+# dic_final,vetor = calcula_todos_angulos(landmark_data)
+# print(dic_final)
+# with open("Scripts/vetores.txt", "r") as file:
+#     conteudo = file.read()
     
-with open("Scripts/vetores.txt", "w") as file:
-    for i in vetor:
-        conteudo = conteudo + str(i) + ','
-    conteudo = conteudo + "\n"
-    file.write(conteudo)
+# with open("Scripts/vetores.txt", "w") as file:
+#     for i in vetor:
+#         conteudo = conteudo + str(i) + ','
+#     conteudo = conteudo + "\n"
+#     file.write(conteudo)

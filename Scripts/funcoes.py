@@ -6,6 +6,8 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 import cv2
+from tqdm import tqdm
+
 
 # atalhos para desenho
 mp_drawing = mp.solutions.drawing_utils
@@ -261,17 +263,19 @@ def normalize_and_detect(image_np, detector, output_size=(350, 550), padding_rat
     # Retornar a imagem normalizada e os pontos recalculados
     return padded_image, detection_result_resized
 
-def analise_imagem(img_path, labels=True):
+def analise_imagem(img_path, labels=True, path=True):
     # Carregar a imagem
-    img = cv2.imread(img_path)
-
+    if path:
+        img = cv2.imread(img_path)
+    else:
+        img = img_path
     # Verificar se a imagem foi carregada corretamente
     if img is None:
         raise FileNotFoundError(f"Não foi possível carregar a imagem no caminho: {img_path}")
 
     # cv2.imshow("Minha Imagem", img)
-    cv2.waitKey(0)  # Espera até uma tecla ser pressionada
-    cv2.destroyAllWindows()  # Fecha a janela depois disso
+    # cv2.waitKey(0)  # Espera até uma tecla ser pressionada
+    # cv2.destroyAllWindows()  # Fecha a janela depois disso
 
     # STEP 2: Create an PoseLandmarker object.
     base_options = python.BaseOptions(model_asset_path="pose_landmarker.task")
@@ -326,31 +330,97 @@ def analise_imagem(img_path, labels=True):
     ]
 
     # Salvar a imagem normalizada
-    cv2.imwrite("normalized_image.png", normalized_image)
+    # cv2.imwrite("normalized_image.png", normalized_image)
 
     # Salvar os pontos recalculados
     landmarks = detection_result.pose_landmarks[0]
     landmark_data = {}
-
+    landmark_list = []
     for idx, landmark in enumerate(landmarks):
         name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
-        print(
-            f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
-        )
+        # print(
+        #     f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
+        # )
         landmark_data[name] = {
             "x": round(landmark.x, 3),
             "y": round(landmark.y, 3),
             "z": round(landmark.z, 3),
             "visibility": round(landmark.visibility, 2)
         }
+        landmark_list.append((landmark.x, landmark.y, landmark.z, landmark.visibility))
+
 
     # Salvar os pontos recalculados em um arquivo
-    with open("normalized_landmarks.txt", "w") as file:
-        for idx, landmark in enumerate(landmarks):
-            file.write(
-                f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
-            )
+    # with open("normalized_landmarks.txt", "w") as file:
+    #     for idx, landmark in enumerate(landmarks):
+    #         file.write(
+    #             f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
+    #         )
 
     # STEP 5: Process the detection result. In this case, visualize it.
     annotated_image = draw_landmarks_on_image(normalized_image, detection_result, label=labels)
-    return annotated_image, landmark_data
+    return annotated_image, landmark_data, landmark_list
+
+def data_augmentation(image_path, min_angle, max_angle, min_scale, max_scale, min_padding, max_padding):
+    """
+    Realiza data augmentation na imagem, aplicando rotação, escala e padding.
+    """
+    image = cv2.imread(image_path)
+    # cria uma imagem para cada angulo no intervalo min_angle e max_angle
+    for angle in tqdm(range(min_angle, max_angle + 1), desc="Processing angles"):
+        # Rotaciona a imagem
+        height, width = image.shape[:2]
+        center = (width // 2, height // 2)
+
+        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+
+        # # Calcula as dimensões da nova imagem para garantir que nenhuma parte fique de fora
+        # abs_cos = abs(rotation_matrix[0, 0])
+        # abs_sin = abs(rotation_matrix[0, 1])
+        # bound_w = int(height * abs_sin + width * abs_cos)
+        # bound_h = int(height * abs_cos + width * abs_sin)
+
+        # # Ajusta a matriz de rotação para o centro da nova imagem
+        # rotation_matrix[0, 2] += (bound_w - width) / 2
+        # rotation_matrix[1, 2] += (bound_h - height) / 2
+
+        # # Rotaciona a imagem com as novas dimensões
+        # rotated_image = cv2.warpAffine(image, rotation_matrix, (bound_w, bound_h))
+
+        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+
+        #cria uma imagem para cada escala no intervalo min_scale e max_scale
+        for scale in np.arange(min_scale, max_scale + 0.1, 0.1):
+            # Aplica escala
+            scaled_image = cv2.resize(rotated_image, None, fx=scale, fy=scale)
+
+            
+            #cria uma imagem para cada combinacao de padding no intervalo min_padding e max_padding
+            for padding in range(min_padding, max_padding + 1, 5):
+                for left in range(0,1):
+                    for right in range(0,1):
+                        for top in range(0,1):
+                            for bottom in range(0,1):
+                                # Aplica padding
+                                padded_image = cv2.copyMakeBorder(
+                                    scaled_image, top*padding, bottom*padding, left*padding, right*padding, cv2.BORDER_CONSTANT, value=[0, 0, 0]
+                                )
+
+                                annotated_image, landmark_data, landmark_list = analise_imagem(padded_image, labels=False, path=False)
+                                
+                                # Mostrar a imagem com padding até que o usuário pressione 'q'
+                                # cv2.imshow("Padded Image", padded_image)
+                                # cv2.waitKey(0)
+                                # cv2.destroyAllWindows()
+                                
+                                with open("Scripts/vetores.txt", "r") as file:
+                                    conteudo = file.read()
+                                    
+                                with open("Scripts/vetores.txt", "w") as file:
+                                    for i in landmark_list:
+                                        conteudo = conteudo + str(i) + ','
+                                    conteudo = conteudo + "\n"
+                                    file.write(conteudo)
+
+    return 1
