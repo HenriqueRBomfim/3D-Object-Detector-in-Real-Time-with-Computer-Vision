@@ -1,6 +1,8 @@
+import os
 import cv2
 import mediapipe as mp
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Configurações do MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -9,11 +11,10 @@ pose = mp_pose.Pose(static_image_mode=False,
                     enable_segmentation=False,
                     min_detection_confidence=0.5,
                     min_tracking_confidence=0.5)
-mp_drawing = mp.solutions.drawing_utils
 
 # Parâmetros de detecção de imobilidade
 detection_frames = 5      # número de frames em sequência para considerar imóvel
-movement_threshold = 0.02  # limiar de movimento das landmarks
+movement_threshold = 0.01  # limiar de movimento das landmarks
 
 # Função para calcular movimento entre dois conjuntos de landmarks
 def pose_movement(landmarks_prev, landmarks_cur):
@@ -23,41 +24,95 @@ def pose_movement(landmarks_prev, landmarks_cur):
     pts_cur  = np.array([[lm.x, lm.y] for lm in landmarks_cur])
     return np.mean(np.linalg.norm(pts_cur - pts_prev, axis=1))
 
-cap = cv2.VideoCapture('../Images/Treino/dangun.mp4')
+# Caminhos de arquivos
+input_video_path = '../Images/Treino/dangun.mp4'
+output_video_with_counter = 'video_taekwondo_with_counter.mp4'
 
+# Preparar captura e escrita de vídeo com contador se necessário
+cap = cv2.VideoCapture(input_video_path)
+if not cap.isOpened():
+    raise IOError(f"Não foi possível abrir o vídeo {input_video_path}")
+
+# Configurar writer somente se o arquivo não existir
+generate_video = not os.path.exists(output_video_with_counter)
+if generate_video:
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    writer = cv2.VideoWriter(output_video_with_counter, fourcc, fps, (width, height))
+    print(f"Gerando vídeo com contador: {output_video_with_counter}")
+else:
+    print(f"Vídeo com contador já existe, pulando geração: {output_video_with_counter}")
+
+# Inicialização de variáveis
+frame_idx = 0
 prev_landmarks = None
 still_counter = 0
-frame_index = 0
+movements = []
+stationary_frames = []  # índices onde a pose está imóvel
 
-while cap.isOpened():
-    print(f"Frame: {frame_index}")	
+# Loop de processamento
+while True:
     ret, frame = cap.read()
     if not ret:
         break
 
+    # Detecção de pose
     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = pose.process(image_rgb)
-
     cur_landmarks = results.pose_landmarks.landmark if results.pose_landmarks else None
     mov = pose_movement(prev_landmarks, cur_landmarks)
+    movements.append(mov)
 
-    # Verifica se abaixo do limiar
+    # Desenhar contador de frames no vídeo se gerando
+    if generate_video:
+        cv2.putText(frame, f"Frame: {frame_idx}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
+                    1, (255, 255, 255), 2, cv2.LINE_AA)
+        writer.write(frame)
+
+    # Verifica imobilidade
     if mov < movement_threshold:
         still_counter += 1
     else:
         still_counter = 0
 
-    # Se imóvel por X frames, salva print
+    # Se imóvel por detection_frames, registra e salva print
     if still_counter == detection_frames:
-        filename = f"pose_still_{frame_index}.png"
-        # Desenha esqueleto no frame
-        mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-        cv2.imwrite(filename, frame)
-        print(f"Imagem salva: {filename}")
+        stationary_frames.append(frame_idx)
+        img_name = f"pose_still_{frame_idx}.png"
+        cv2.imwrite(img_name, frame)
+        print(f"Imagem salva: {img_name}")
 
     prev_landmarks = cur_landmarks
-    frame_index += 1
+    frame_idx += 1
 
+# Finaliza captura e writer
 cap.release()
+if generate_video:
+    writer.release()
+print("Processamento de vídeo concluído.")
+
 pose.close()
 cv2.destroyAllWindows()
+
+# Salvar movimentos em arquivo de texto
+with open('movements.txt', 'w') as f:
+    for idx, m in enumerate(movements):
+        f.write(f"Frame {idx}: {m}\n")
+print('Arquivo movements.txt gerado com os valores de movimento por frame.')
+
+# Plotar gráfico de movimentos com destaques automáticos
+plt.figure()
+plt.plot(movements, label='Movimento médio')
+# Destacar automaticamente frames estacionários
+for fh in stationary_frames:
+    plt.axvline(fh, color='red', linestyle='--', linewidth=1)
+    plt.scatter(fh, movements[fh], color='red', zorder=5)
+plt.title('Movimento médio por frame (destaques automáticos)')
+plt.xlabel('Índice do frame')
+plt.ylabel('Movimento médio')
+plt.legend()
+plt.grid(True)
+plt.savefig('movements_plot.png')
+print('Gráfico salvo em movements_plot.png com destaques automáticos.')
