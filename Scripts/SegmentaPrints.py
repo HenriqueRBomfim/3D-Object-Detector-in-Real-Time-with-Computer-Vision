@@ -13,8 +13,8 @@ pose = mp_pose.Pose(static_image_mode=False,
                     min_tracking_confidence=0.5)
 
 # Parâmetros de detecção de imobilidade
-detection_frames = 5      # número de frames em sequência para considerar imóvel
-movement_threshold = 0.01  # limiar de movimento das landmarks
+detection_frames = 6      # número de frames em sequência para considerar imóvel
+movement_threshold = 0.011  # limiar de movimento das landmarks
 
 # Função para calcular movimento entre dois conjuntos de landmarks
 def pose_movement(landmarks_prev, landmarks_cur):
