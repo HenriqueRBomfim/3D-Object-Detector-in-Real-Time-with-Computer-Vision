@@ -3,6 +3,7 @@ from funcoes import draw_landmarks_on_image, calcula_todos_angulos, normalize_an
 import numpy as np
 import sys
 import os
+import time
 
 # STEP 1: Import the necessary modules.
 import mediapipe as mp
@@ -57,7 +58,25 @@ elif is_mac:
 else:
     raise Exception("Sistema operacional não suportado")
 
-data_augmentation(img_path, -15, 15, 0.5, 1.5, 30, 30)
+
+# Caminho para a pasta "ImagensModelo"
+folder_path = "./Scripts/ImagensModelo"
+
+# Lista o conteúdo da pasta "ImagensModelo"
+
+folder_contents = os.listdir(folder_path)
+for item in folder_contents:
+    print(item)
+    tempo_inicial = time.time()
+    data_augmentation(item, -10, 10, 0.5, 1.5, 30, 30)
+    tempo_final = time.time()
+    print(f"Tempo de execução: {tempo_final - tempo_inicial:.2f} segundos")
+
+# tempo_inicial = time.time()
+# data_augmentation(img_path, -10, 10, 0.5, 1.5, 30, 30)
+# tempo_final = time.time()
+# print(f"Tempo de execução: {tempo_final - tempo_inicial:.2f} segundos")
+
 
 # annotated_image, landmark_data, landmark_list = analise_imagem(img_path, labels=False)
 
