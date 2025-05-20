@@ -25,7 +25,7 @@ def pose_movement(landmarks_prev, landmarks_cur):
     return np.mean(np.linalg.norm(pts_cur - pts_prev, axis=1))
 
 # Caminhos de arquivos
-input_video_path = '../Images/Treino/DanGunSlow.mp4'
+input_video_path = '../Images/Treino/DanGunTutorial.mp4'
 output_video_with_counter = 'video_taekwondo_with_counter.mp4'
 
 # Preparar captura e escrita de vídeo com contador se necessário
