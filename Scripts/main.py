@@ -47,21 +47,10 @@ from mediapipe.tasks.python import vision
 32 - right foot index
 
 """
-# Detecta o sistema operacional
-is_windows = sys.platform == "win32"
-is_mac = sys.platform == "darwin"
-
-if is_windows:
-    img_path = r".\Images\Treino\Dangun\Pose 1\video4_dangun.png"
-elif is_mac:
-    img_path = "./Images/Treino/padding_dois_lados_video2_dangun_1.png"
-else:
-    raise Exception("Sistema operacional não suportado")
-
 
 # Caminho para a pasta "ImagensModelo"
-folder_path = "./Scripts/ImagensModelo"
-nome_saida = "vetores.txt"
+folder_path = "./Images/Poses/Pose 2"
+nome_saida = "Pose2.txt"
 
 # Lista o conteúdo da pasta "ImagensModelo"
 
@@ -70,7 +59,7 @@ for item in folder_contents:
     print(item)
     path = folder_path + "/" + item
     tempo_inicial = time.time()
-    data_augmentation(path, "Scripts/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
+    data_augmentation(path, "Images/Saidas/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
     tempo_final = time.time()
     print(f"Tempo de execução: {tempo_final - tempo_inicial:.2f} segundos")
 
