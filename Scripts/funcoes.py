@@ -7,6 +7,7 @@ from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 import cv2
 from tqdm import tqdm
+import os
 
 
 # atalhos para desenho
@@ -418,6 +419,9 @@ def data_augmentation(image_path, saida_path, min_angle, max_angle, min_scale, m
                                 # cv2.destroyAllWindows()
                                 
                                 if landmark_list != -1:
+                                    if not os.path.exists(saida_path):
+                                        with open(saida_path, "w") as file:
+                                            pass
                                     with open(saida_path, "r") as file:
                                         conteudo = file.read()
                                         
