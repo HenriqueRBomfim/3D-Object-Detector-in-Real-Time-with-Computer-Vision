@@ -13,8 +13,8 @@ pose = mp_pose.Pose(static_image_mode=False,
                     min_tracking_confidence=0.5)
 
 # Parâmetros de detecção de imobilidade
-detection_frames = 6      # número de frames em sequência para considerar imóvel
-movement_threshold = 0.011  # limiar de movimento das landmarks
+detection_frames = 8      # número de frames em sequência para considerar imóvel
+movement_threshold = 0.005  # limiar de movimento das landmarks
 
 # Função para calcular movimento entre dois conjuntos de landmarks
 def pose_movement(landmarks_prev, landmarks_cur):
@@ -25,7 +25,7 @@ def pose_movement(landmarks_prev, landmarks_cur):
     return np.mean(np.linalg.norm(pts_cur - pts_prev, axis=1))
 
 # Caminhos de arquivos
-input_video_path = '../Images/Treino/dangun.mp4'
+input_video_path = '../Images/Treino/DanGunSlow.mp4'
 output_video_with_counter = 'video_taekwondo_with_counter.mp4'
 
 # Preparar captura e escrita de vídeo com contador se necessário
@@ -65,7 +65,7 @@ while True:
     mov = pose_movement(prev_landmarks, cur_landmarks)
     movements.append(mov)
 
-    # Desenhar contador de frames no vídeo se gerando
+    # Desenhar contador de frames e escrever no vídeo se necessário
     if generate_video:
         cv2.putText(frame, f"Frame: {frame_idx}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
                     1, (255, 255, 255), 2, cv2.LINE_AA)
@@ -77,12 +77,36 @@ while True:
     else:
         still_counter = 0
 
-    # Se imóvel por detection_frames, registra e salva print
+    stop = False
+    # Bloco interativo de confirmação de frames estacionários
     if still_counter == detection_frames:
         stationary_frames.append(frame_idx)
-        img_name = f"pose_still_{frame_idx}.png"
-        cv2.imwrite(img_name, frame)
-        print(f"Imagem salva: {img_name}")
+        window_name = f"Frame {frame_idx} – S=salvar, N=pular, K=sair"
+        cv2.imshow(window_name, frame)
+        while True:
+            key = cv2.waitKey(0) & 0xFF
+            if key in (ord('s'), ord('S')):
+                img_name = f"pose_still_{frame_idx}.png"
+                cv2.imwrite(img_name, frame)
+                print(f"[S] Imagem salva: {img_name}")
+                break
+            elif key in (ord('n'), ord('N')):
+                print(f"[N] Imagem descartada: frame {frame_idx}")
+                break
+            elif key in (ord('k'), ord('K')):
+                print("Tecla K pressionada. Encerrando o programa.")
+                stop = True
+                break
+            else:
+                continue
+        cv2.destroyWindow(window_name)
+        if stop:
+            break
+
+    # Verifica tecla geral K durante reprodução normal
+    if cv2.waitKey(1) & 0xFF in (ord('k'), ord('K')):
+        print("Tecla K pressionada. Encerrando o programa.")
+        break
 
     prev_landmarks = cur_landmarks
     frame_idx += 1
@@ -91,10 +115,8 @@ while True:
 cap.release()
 if generate_video:
     writer.release()
-print("Processamento de vídeo concluído.")
-
-pose.close()
 cv2.destroyAllWindows()
+print("Processamento de vídeo concluído.")
 
 # Salvar movimentos em arquivo de texto
 with open('movements.txt', 'w') as f:
@@ -105,10 +127,9 @@ print('Arquivo movements.txt gerado com os valores de movimento por frame.')
 # Plotar gráfico de movimentos com destaques automáticos
 plt.figure()
 plt.plot(movements, label='Movimento médio')
-# Destacar automaticamente frames estacionários
 for fh in stationary_frames:
-    plt.axvline(fh, color='red', linestyle='--', linewidth=1)
-    plt.scatter(fh, movements[fh], color='red', zorder=5)
+    plt.axvline(fh, linestyle='--', linewidth=1)
+    plt.scatter(fh, movements[fh], zorder=5)
 plt.title('Movimento médio por frame (destaques automáticos)')
 plt.xlabel('Índice do frame')
 plt.ylabel('Movimento médio')

@@ -333,35 +333,37 @@ def analise_imagem(img_path, labels=True, path=True):
     # cv2.imwrite("normalized_image.png", normalized_image)
 
     # Salvar os pontos recalculados
-    landmarks = detection_result.pose_landmarks[0]
-    landmark_data = {}
-    landmark_list = []
-    for idx, landmark in enumerate(landmarks):
-        name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
-        # print(
-        #     f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
-        # )
-        landmark_data[name] = {
-            "x": round(landmark.x, 3),
-            "y": round(landmark.y, 3),
-            "z": round(landmark.z, 3),
-            "visibility": round(landmark.visibility, 2)
-        }
-        landmark_list.append((landmark.x, landmark.y, landmark.z, landmark.visibility))
+    if len(detection_result.pose_landmarks) > 0:
+        landmarks = detection_result.pose_landmarks[0]
+        landmark_data = {}
+        landmark_list = []
+        for idx, landmark in enumerate(landmarks):
+            name = landmark_names[idx] if idx < len(landmark_names) else f"landmark {idx}"
+            # print(
+            #     f"{idx:02d} - {name:<20} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}"
+            # )
+            landmark_data[name] = {
+                "x": round(landmark.x, 3),
+                "y": round(landmark.y, 3),
+                "z": round(landmark.z, 3),
+                "visibility": round(landmark.visibility, 2)
+            }
+            landmark_list.append((landmark.x, landmark.y, landmark.z, landmark.visibility))
 
 
-    # Salvar os pontos recalculados em um arquivo
-    # with open("normalized_landmarks.txt", "w") as file:
-    #     for idx, landmark in enumerate(landmarks):
-    #         file.write(
-    #             f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
-    #         )
+        # Salvar os pontos recalculados em um arquivo
+        # with open("normalized_landmarks.txt", "w") as file:
+        #     for idx, landmark in enumerate(landmarks):
+        #         file.write(
+        #             f"{idx:02d} -> x: {landmark.x:.3f}, y: {landmark.y:.3f}, z: {landmark.z:.3f}, visibility: {landmark.visibility:.2f}\n"
+        #         )
 
-    # STEP 5: Process the detection result. In this case, visualize it.
-    annotated_image = draw_landmarks_on_image(normalized_image, detection_result, label=labels)
-    return annotated_image, landmark_data, landmark_list
+        # STEP 5: Process the detection result. In this case, visualize it.
+        annotated_image = draw_landmarks_on_image(normalized_image, detection_result, label=labels)
+        return annotated_image, landmark_data, landmark_list
+    return -1,-1,-1
 
-def data_augmentation(image_path, min_angle, max_angle, min_scale, max_scale, min_padding, max_padding):
+def data_augmentation(image_path, saida_path, min_angle, max_angle, min_scale, max_scale, min_padding, max_padding):
     """
     Realiza data augmentation na imagem, aplicando rotação, escala e padding.
     """
@@ -408,19 +410,21 @@ def data_augmentation(image_path, min_angle, max_angle, min_scale, max_scale, mi
                                 )
 
                                 annotated_image, landmark_data, landmark_list = analise_imagem(padded_image, labels=False, path=False)
-                                
+
+                                    
                                 # Mostrar a imagem com padding até que o usuário pressione 'q'
                                 # cv2.imshow("Padded Image", padded_image)
                                 # cv2.waitKey(0)
                                 # cv2.destroyAllWindows()
                                 
-                                with open("Scripts/vetores.txt", "r") as file:
-                                    conteudo = file.read()
-                                    
-                                with open("Scripts/vetores.txt", "w") as file:
-                                    for i in landmark_list:
-                                        conteudo = conteudo + str(i) + ','
-                                    conteudo = conteudo + "\n"
-                                    file.write(conteudo)
+                                if landmark_list != -1:
+                                    with open(saida_path, "r") as file:
+                                        conteudo = file.read()
+                                        
+                                    with open(saida_path, "w") as file:
+                                        for i in landmark_list:
+                                            conteudo = conteudo + str(i) + ','
+                                        conteudo = conteudo + "\n"
+                                        file.write(conteudo)
 
     return 1
