@@ -67,8 +67,9 @@ folder_path = "./Scripts/ImagensModelo"
 folder_contents = os.listdir(folder_path)
 for item in folder_contents:
     print(item)
+    path = folder_path + "/" + item
     tempo_inicial = time.time()
-    data_augmentation(item, -10, 10, 0.5, 1.5, 30, 30)
+    data_augmentation(path, "Scripts/vetores.txt", -10, 10, 0.5, 1.5, 30, 30)
     tempo_final = time.time()
     print(f"Tempo de execução: {tempo_final - tempo_inicial:.2f} segundos")
 
