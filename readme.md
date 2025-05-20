@@ -1,4 +1,4 @@
-Pré-requisitos:
+# Pré-requisitos:
 
 Criar um ambiente virtual:
 
@@ -21,12 +21,15 @@ Instalar no ambiente virtual:
 pip install mediapipe
 ```
 
+```
 curl -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
-
+```
 
 Versão final do .gitignore:
 
-venv
-.venv
-pose_landmarker.task
-Scripts\__pycache__
+- venv
+- .venv
+- pose_landmarker.task
+- Scripts\__pycache__
+
+
