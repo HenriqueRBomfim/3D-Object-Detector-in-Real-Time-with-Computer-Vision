@@ -61,14 +61,16 @@ else:
 
 # Caminho para a pasta "ImagensModelo"
 folder_path = "./Scripts/ImagensModelo"
+nome_saida = "vetores.txt"
 
 # Lista o conteúdo da pasta "ImagensModelo"
 
 folder_contents = os.listdir(folder_path)
 for item in folder_contents:
     print(item)
+    path = folder_path + "/" + item
     tempo_inicial = time.time()
-    data_augmentation(item, -10, 10, 0.5, 1.5, 30, 30)
+    data_augmentation(path, "Scripts/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
     tempo_final = time.time()
     print(f"Tempo de execução: {tempo_final - tempo_inicial:.2f} segundos")
 
