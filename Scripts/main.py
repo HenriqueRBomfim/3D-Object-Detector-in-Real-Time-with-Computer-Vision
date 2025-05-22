@@ -53,7 +53,7 @@ tempo_inicial = time.time()
 paths = os.listdir("./Images/Poses")
 for folder_path in paths[3:10]:
     nome_saida = folder_path
-    folder_path = "./Images/Poses/" + folder_path
+    folder_path = "./Images/Poses/" + folder_path + ".txt"
 
     folder_contents = os.listdir(folder_path)
     for item in folder_contents:
