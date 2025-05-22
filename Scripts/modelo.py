@@ -3,7 +3,9 @@ import glob
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 import ast
 import re
 
@@ -31,20 +33,21 @@ def load_pose_files(folder, label):
 # ./poses/Pose2/ -> arquivos .txt da pose 2
 # Adicione mais pastas para mais poses
 
-pose_folders = {
-    "Pose1": "./Scripts/Poses_salvas" #,
-    # "Pose2": "./poses/Pose2"
-    # Adicione mais poses aqui
-}
-
 X, y = [], []
-for label, folder in pose_folders.items():
-    Xi, yi = load_pose_files(folder, label)
-    X.extend(Xi)
-    y.extend(yi)
+saidas_folder = "./Images/Saidas"
 
-X = np.array(X)
-y = np.array(y)
+print("Procurando arquivos em:", os.path.abspath(saidas_folder))
+for file in glob.glob(os.path.join(saidas_folder, "*.txt")):
+    print("Lendo arquivo:", file)
+    # Extrai o nome da pose do nome do arquivo (antes do primeiro "_")
+    base = os.path.basename(file)
+    label = base.split("_")[0]  # Exemplo: Pose1_001.txt -> Pose1
+    with open(file, "r") as f:
+        for line in f:
+            features = parse_line(line)
+            if len(features) == 33*4:
+                X.append(features)
+                y.append(label)
 
 # Treinamento do modelo
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -53,6 +56,19 @@ clf.fit(X_train, y_train)
 
 # Avaliação
 print(classification_report(y_test, clf.predict(X_test)))
+
+# Matriz de confusão
+cm = confusion_matrix(y_test, clf.predict(X_test), labels=clf.classes_)
+print("Matriz de confusão:")
+print(cm)
+
+# Visualização gráfica (opcional)
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=clf.classes_, yticklabels=clf.classes_)
+plt.xlabel('Predito')
+plt.ylabel('Real')
+plt.title('Matriz de Confusão')
+plt.show()
 
 def predict_pose(input_line):
     features = parse_line(input_line.replace('),(', ')|(').replace('),', ')|').replace(',(', '|(').replace(' ', '').replace('),|(', ')|(').replace('),|', ')|').replace('|', ''))

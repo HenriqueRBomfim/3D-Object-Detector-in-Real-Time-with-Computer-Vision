@@ -51,17 +51,20 @@ from mediapipe.tasks.python import vision
 # Caminho para a pasta "ImagensModelo"
 tempo_inicial = time.time()
 paths = os.listdir("./Images/Poses")
-for folder_path in paths[2:]:
-    nome_saida = folder_path
-    folder_path = "./Images/Poses/" + folder_path
+print(paths)
+folder_path = paths[11]
+# for folder_path in paths[11]:
+nome_saida = folder_path
+folder_path = "./Images/Poses/" + folder_path
+print(folder_path)
 
-    folder_contents = os.listdir(folder_path)
-    for item in folder_contents:
-        print(item)
-        path = folder_path + "/" + item
-        data_augmentation(path, "Images/Saidas/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
-        current_time = time.time()
-        print(f"Tempo de execução atual: {current_time - tempo_inicial:.2f} segundos")
+folder_contents = os.listdir(folder_path)
+for item in folder_contents:
+    print(item)
+    path = folder_path + "/" + item
+    data_augmentation(path, "Images/Saidas/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
+    current_time = time.time()
+    print(f"Tempo de execução atual: {current_time - tempo_inicial:.2f} segundos")
 
 tempo_final = time.time()
 print(f"Tempo de execução total: {tempo_final - tempo_inicial:.2f} segundos")
