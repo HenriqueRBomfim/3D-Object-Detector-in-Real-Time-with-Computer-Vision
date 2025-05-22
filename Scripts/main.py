@@ -53,13 +53,13 @@ tempo_inicial = time.time()
 paths = os.listdir("./Images/Poses")
 for folder_path in paths[3:10]:
     nome_saida = folder_path
-    folder_path = "./Images/Poses/" + folder_path + ".txt"
+    folder_path = "./Images/Poses/" + folder_path
 
     folder_contents = os.listdir(folder_path)
     for item in folder_contents:
         print(item)
         path = folder_path + "/" + item
-        data_augmentation(path, "Images/Saidas/"+nome_saida, -10, 10, 0.5, 1.5, 30, 30)
+        data_augmentation(path, "Images/Saidas/"+nome_saida + ".txt", -10, 10, 0.5, 1.5, 30, 30)
         current_time = time.time()
         print(f"Tempo de execução atual: {current_time - tempo_inicial:.2f} segundos")
 
