@@ -2,3 +2,4 @@ mediapipe
 scikit-learn
 numpy
 tqdm
+seaborn
