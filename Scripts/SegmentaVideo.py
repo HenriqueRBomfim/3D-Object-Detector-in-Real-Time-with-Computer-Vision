@@ -16,7 +16,7 @@ from funcoes import (
 
 def main():
     # 1) Inicializa o detector em modo VÍDEO
-    base = BaseOptions(model_asset_path="../pose_landmarker.task")
+    base = BaseOptions(model_asset_path="./pose_landmarker.task")
     opts = PoseLandmarkerOptions(
         base_options=base,
         running_mode=RunningMode.VIDEO,
@@ -25,7 +25,7 @@ def main():
     detector = PoseLandmarker.create_from_options(opts)
 
     # 2) Abre o vídeo
-    cap = cv2.VideoCapture('../Images/Treino/dangun.mp4')
+    cap = cv2.VideoCapture('./Images/Treino/dangun4.mp4')
     if not cap.isOpened():
         print("Erro ao abrir vídeo/câmera"); sys.exit(1)
 

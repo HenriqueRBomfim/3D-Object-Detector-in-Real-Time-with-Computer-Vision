@@ -212,7 +212,7 @@ def normalize_and_detect(image_np, detector, output_size=(350, 550), padding_rat
     # Detectar os pontos na imagem original
     detection_result = detector.detect(mp_image)
     if not detection_result.pose_landmarks:
-        raise ValueError("Nenhum ponto detectado na imagem.")
+        return None, None
 
     # Obter os pontos extremos
     landmarks = detection_result.pose_landmarks[0]
@@ -294,6 +294,9 @@ def analise_imagem(img_path, labels=True, path=True):
     # Normalizar a imagem e detectar os pontos novamente
     normalized_image, detection_result = normalize_and_detect(image_np, detector)
 
+    if normalized_image is None and detection_result is None:
+        return -1,-1,-1
+    
     landmark_names = [
         "nose",
         "left eye (inner)",
