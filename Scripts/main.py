@@ -51,7 +51,8 @@ from mediapipe.tasks.python import vision
 # Caminho para a pasta "ImagensModelo"
 tempo_inicial = time.time()
 paths = os.listdir("./Images/Poses")
-for folder_path in paths[3:10]:
+# print(paths)
+for folder_path in paths[11:]:
     nome_saida = folder_path
     folder_path = "./Images/Poses/" + folder_path
 
