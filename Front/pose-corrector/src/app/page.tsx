@@ -71,18 +71,19 @@ export default function Home() {
 		setLoading(true);
 		const formData = new FormData();
 		formData.append("image", file);
-		// try {
-		// 	const res = await fetch("/api/pose", {
-		// 		method: "POST",
-		// 		body: formData,
-		// 	});
-		// 	const data = await res.json();
-		// 	setResult(data);
-		// } catch (err) {
-		// 	console.error(err);
-		// } finally {
-		setLoading(false);
-		// }
+
+		try {
+			const res = await fetch("http://0.0.0.0:8000/api/pose", {
+				method: "POST",
+				body: formData,
+			});
+			const data = await res.json();
+			console.log(data);
+		} catch (err) {
+			console.error(err);
+		} finally {
+			setLoading(false);
+		}
 	}
 	return (
 		<div className="min-h-screen p-8 sm:p-20 flex flex-col items-center gap-6">
