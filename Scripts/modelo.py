@@ -8,11 +8,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import ast
 import re
+from joblib import dump
+
 
 def parse_line(line):
     # Extrai todos os números float da linha
     floats = re.findall(r"[-+]?\d*\.\d+|\d+", line)
     return np.array([float(f) for f in floats])
+
 
 def load_pose_files(folder, label):
     X, y = [], []
@@ -21,11 +24,20 @@ def load_pose_files(folder, label):
         print("Lendo arquivo:", file)
         with open(file, "r") as f:
             for line in f:
-                features = parse_line(line.replace('),(', ')|(').replace('),', ')|').replace(',(', '|(').replace(' ', '').replace('),|(', ')|(').replace('),|', ')|').replace('|', ''))
-                if len(features) == 33*4:
+                features = parse_line(
+                    line.replace("),(", ")|(")
+                    .replace("),", ")|")
+                    .replace(",(", "|(")
+                    .replace(" ", "")
+                    .replace("),|(", ")|(")
+                    .replace("),|", ")|")
+                    .replace("|", "")
+                )
+                if len(features) == 33 * 4:
                     X.append(features)
                     y.append(label)
     return X, y
+
 
 # Exemplo de uso:
 # Estrutura de pastas:
@@ -45,14 +57,18 @@ for file in glob.glob(os.path.join(saidas_folder, "*.txt")):
     with open(file, "r") as f:
         for line in f:
             features = parse_line(line)
-            if len(features) == 33*4:
+            if len(features) == 33 * 4:
                 X.append(features)
                 y.append(label)
 
 # Treinamento do modelo
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(X_train, y_train)
+dump(clf, "model.joblib")
+print("Modelo treinado e salvo em model.joblib")
 
 # Avaliação
 print(classification_report(y_test, clf.predict(X_test)))
@@ -64,19 +80,36 @@ print(cm)
 
 # Visualização gráfica (opcional)
 plt.figure(figsize=(6, 5))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=clf.classes_, yticklabels=clf.classes_)
-plt.xlabel('Predito')
-plt.ylabel('Real')
-plt.title('Matriz de Confusão')
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=clf.classes_,
+    yticklabels=clf.classes_,
+)
+plt.xlabel("Predito")
+plt.ylabel("Real")
+plt.title("Matriz de Confusão")
 plt.show()
 
+
 def predict_pose(input_line):
-    features = parse_line(input_line.replace('),(', ')|(').replace('),', ')|').replace(',(', '|(').replace(' ', '').replace('),|(', ')|(').replace('),|', ')|').replace('|', ''))
-    if len(features) != 33*4:
+    features = parse_line(
+        input_line.replace("),(", ")|(")
+        .replace("),", ")|")
+        .replace(",(", "|(")
+        .replace(" ", "")
+        .replace("),|(", ")|(")
+        .replace("),|", ")|")
+        .replace("|", "")
+    )
+    if len(features) != 33 * 4:
         raise ValueError("Linha de entrada inválida")
     proba = clf.predict_proba([features])[0]
     for i, pose in enumerate(clf.classes_):
         print(f"{pose}: {proba[i]*100:.2f}% de chance")
+
 
 # Exemplo de uso:
 # Percorre cada linha do resultado.txt e faz a predição

@@ -69,8 +69,10 @@ export default function Home() {
 	async function handleSubmit() {
 		if (!file) return;
 		setLoading(true);
+
 		const formData = new FormData();
 		formData.append("image", file);
+		formData.append("target_pose", selectedOption); // << ADICIONADO
 
 		try {
 			const res = await fetch("http://0.0.0.0:8000/api/pose", {
@@ -78,9 +80,10 @@ export default function Home() {
 				body: formData,
 			});
 			const data = await res.json();
-			console.log(data);
+			setResult(data); // << ADICIONADO
 		} catch (err) {
 			console.error(err);
+			alert("Erro ao processar a imagem.");
 		} finally {
 			setLoading(false);
 		}
@@ -143,7 +146,7 @@ export default function Home() {
 			{result && (
 				<div className="mt-6 w-full max-w-lg">
 					<h2 className="text-2xl font-semibold mb-2">
-						Resultado do Back-end
+						Lista de probabilidade
 					</h2>
 					<pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto">
 						{JSON.stringify(result, null, 2)}

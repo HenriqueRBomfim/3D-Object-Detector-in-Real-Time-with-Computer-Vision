@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import random
 import cv2
@@ -28,9 +29,20 @@ async def pose_endpoint(image: UploadFile = File(...), target_pose: str = Form(.
     # 3) extrair landmarks (passando img e path=False)
     _, landmark_data, landmark_list = analise_imagem(img, labels=False, path=False)
     # 4) roda o modelo de previsão sobre os landmarks extraídos
+    print(landmark_list, "lanmarklist")
     flat_landmarks = np.array(landmark_list).reshape(-1).tolist()
+    # 4) validar tamanho
+    if len(flat_landmarks) != 33 * 4:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Landmarks inválidos: esperava 132 floats mas recebeu {len(flat_landmarks)}",
+        )
+    # 5) chamar predict e tratar erro
+    try:
+        predictions = predict_landmarks(flat_landmarks)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    predictions = predict_landmarks(flat_landmarks)
     # 5) retorna landmarks, pose alvo e probabilidades por classe
     return {
         "predictions": predictions,
