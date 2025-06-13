@@ -34,7 +34,7 @@ def load_pose_files(folder: str, label: str):
 
 
 # carrega uma única vez quando o módulo é importado
-clf = load("model.joblib")
+clf = load("model2.joblib")
 
 
 def predict_landmarks(features) -> dict:
