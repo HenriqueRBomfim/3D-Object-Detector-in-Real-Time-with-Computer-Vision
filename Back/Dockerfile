@@ -16,6 +16,6 @@ COPY Images/ Images
 COPY normalized_landmarks.txt ./
 COPY pose_landmarker.task ./
 EXPOSE 8000
-COPY model.joblib ./
+COPY model2.joblib ./
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
