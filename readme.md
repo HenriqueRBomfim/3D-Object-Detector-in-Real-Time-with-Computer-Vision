@@ -25,14 +25,13 @@ Este projeto é composto por um **frontend** Next.js e um **backend** FastAPI qu
 ## Usando Docker Compose
 
 1. Clone este repositório  
-2. Copie ou baixe o modelo `.task` dentro de `Back/pose_landmarker.task`  
-3. Na raiz do projeto, execute:
+2. Na raiz do projeto, execute:
 
-   ```bash
-   docker-compose up --build
+   ```zsh
+      docker-compose up --build
    ```
 
-4. Acesse:
+3. Acesse:
    - Frontend: <http://localhost:3000>  
    - Backend (OpenAPI): <http://localhost:8000/docs>
 
