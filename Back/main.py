@@ -29,7 +29,6 @@ async def pose_endpoint(image: UploadFile = File(...), target_pose: str = Form(.
     # 3) extrair landmarks (passando img e path=False)
     _, landmark_data, landmark_list = analise_imagem(img, labels=False, path=False)
     # 4) roda o modelo de previsão sobre os landmarks extraídos
-    print(landmark_list, "lanmarklist")
     flat_landmarks = np.array(landmark_list).reshape(-1).tolist()
     # 4) validar tamanho
     if len(flat_landmarks) != 33 * 4:

@@ -1,35 +1,77 @@
-# Pré-requisitos:
+# Pose Corrector
 
-Criar um ambiente virtual:
+Este projeto é composto por um **frontend** Next.js e um **backend** FastAPI que expõe um endpoint para análise de poses usando MediaPipe.
 
+## Pré-requisitos
+
+- Docker & Docker Compose  
+- (Opcional) Python 3.9+ e `venv` para rodar localmente sem container
+
+---
+
+## Estrutura do Projeto
+
+/
+├── Front/pose-corrector/…      # App Next.js (frontend)  
+├── Back/                        # API FastAPI (backend)  
+│   ├── main.py                 # Ponto de entrada FastAPI  
+│   ├── requirements.txt        # Dependências Python  
+│   └── pose_landmarker.task    # Modelo MediaPipe Task  
+├── Scripts/…                    # Helpers Python usados pelo backend  
+└── docker-compose.yml
+
+---
+
+## Usando Docker Compose
+
+1. Clone este repositório  
+2. Copie ou baixe o modelo `.task` dentro de `Back/pose_landmarker.task`  
+3. Na raiz do projeto, execute:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+4. Acesse:
+   - Frontend: <http://localhost:3000>  
+   - Backend (OpenAPI): <http://localhost:8000/docs>
+
+Para parar e remover containers:
+
+```bash
+docker-compose down
 ```
-py -m venv venv
+
+---
+
+## Executando Localmente (sem Docker)
+
+### 1. Backend
+
+```bash
+cd Back
+python3 -m venv .venv
+source .venv/bin/activate      # macOS/Linux
+# .\.venv\Scripts\activate     # Windows cmd/powershell
+
+pip install -r requirements.txt
+# garanta que pose_landmarker.task está em Back/
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Ativar o ambiente virtual:
+### 2. Frontend
 
-```
-.\venv\Scripts\Activate.ps1
-```
-
-Adicionar um .gitignore com o seguinte conteúdo:
-venv
-
-Instalar no ambiente virtual:
-
-```
-pip install mediapipe
+```bash
+cd Front/pose-corrector
+npm install
+npm run dev
+# ou
+yarn
+yarn dev
 ```
 
-```
-curl -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
-```
+---
 
-Versão final do .gitignore:
+## Testando a API
 
-- venv
-- .venv
-- pose_landmarker.task
-- Scripts\__pycache__
-
-
+Use a interface Swagger em `http://localhost:8000/docs` para enviar uma imagem ao endpoint:
