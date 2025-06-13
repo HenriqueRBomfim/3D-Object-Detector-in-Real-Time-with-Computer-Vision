@@ -67,8 +67,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(X_train, y_train)
-dump(clf, "model.joblib")
-print("Modelo treinado e salvo em model.joblib")
+# dump(clf, "model.joblib")
+# print("Modelo treinado e salvo em model.joblib")
 
 # Avaliação
 print(classification_report(y_test, clf.predict(X_test)))
