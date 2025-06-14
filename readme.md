@@ -74,3 +74,11 @@ yarn dev
 ## Testando a API
 
 Use a interface Swagger em `http://localhost:8000/docs` para enviar uma imagem ao endpoint:
+
+# modelo
+
+para rodar ele é so rodar o script model.py
+
+A seguinte é a quantidade que esta certo
+
+![Previsão](image.png)
