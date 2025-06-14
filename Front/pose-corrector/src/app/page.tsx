@@ -1,4 +1,5 @@
 "use client";
+import { setEngine } from "crypto";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -15,6 +16,7 @@ export default function Home() {
 		setPreview(URL.createObjectURL(selected));
 		setResult(null);
 	}
+
 	const options = [
 		"Pose 1",
 		"Pose 2",
@@ -63,8 +65,13 @@ export default function Home() {
 		"Pose 21": "/pose18.png",
 	};
 	const [selectedOption, setSelectedOption] = useState(options[0]);
+	const [percentageFinal, setPercentageFinal] = useState(0);
 	function handleOptionChange(e: React.ChangeEvent<HTMLSelectElement>) {
 		setSelectedOption(e.target.value);
+	}
+	interface DataItem {
+		selectedOption: string;
+		[key: string]: any;
 	}
 	async function handleSubmit() {
 		if (!file) return;
@@ -80,7 +87,12 @@ export default function Home() {
 				body: formData,
 			});
 			const data = await res.json();
-			setResult(data); // << ADICIONADO
+			console.log(data);
+			console.log(data.predictions, "data 0");
+			const perc = Math.round(data.predictions[selectedOption] * 100);
+			setPercentageFinal(perc);
+			setResult(data);
+			console.log(perc);
 		} catch (err) {
 			console.error(err);
 			alert("Erro ao processar a imagem.");
@@ -88,6 +100,7 @@ export default function Home() {
 			setLoading(false);
 		}
 	}
+
 	return (
 		<div className="min-h-screen p-8 sm:p-20 flex flex-col items-center gap-6">
 			<h1 className="text-3xl font-bold">Pose Corrector</h1>
@@ -145,12 +158,14 @@ export default function Home() {
 
 			{result && (
 				<div className="mt-6 w-full max-w-lg">
-					<h2 className="text-2xl font-semibold mb-2">
-						Lista de probabilidade
-					</h2>
-					<pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto">
-						{JSON.stringify(result, null, 2)}
-					</pre>
+					<p className="text-2xl font-semibold">
+						Você fez a pose{" "}
+						<span className="underline">{selectedOption}</span>{" "}
+						<span className="text-blue-600">
+							{percentageFinal}%
+						</span>{" "}
+						certo.
+					</p>
 				</div>
 			)}
 		</div>

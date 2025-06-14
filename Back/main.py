@@ -39,6 +39,9 @@ async def pose_endpoint(image: UploadFile = File(...), target_pose: str = Form(.
     # 5) chamar predict e tratar erro
     try:
         predictions = predict_landmarks(flat_landmarks)
+        predictions = {
+            key.replace(".txt", ""): value for key, value in predictions.items()
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
