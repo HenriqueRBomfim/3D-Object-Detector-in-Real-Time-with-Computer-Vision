@@ -34,7 +34,7 @@ async def pose_endpoint(image: UploadFile = File(...), target_pose: str = Form(.
     if len(flat_landmarks) != 33 * 4:
         raise HTTPException(
             status_code=400,
-            detail=f"Landmarks inválidos: esperava 132 floats mas recebeu {len(flat_landmarks)}",
+            detail=f"Não foi possível detectar sua pose ;( )",
         )
     # 5) chamar predict e tratar erro
     try:
